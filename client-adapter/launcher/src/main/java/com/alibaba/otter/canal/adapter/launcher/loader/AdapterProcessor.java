@@ -1,6 +1,5 @@
 package com.alibaba.otter.canal.adapter.launcher.loader;
 
-import com.alibaba.otter.canal.connector.core.spi.ProxyCanalMsgConsumer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -8,7 +7,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +22,7 @@ import com.alibaba.otter.canal.connector.core.config.CanalConstants;
 import com.alibaba.otter.canal.connector.core.consumer.CommonMessage;
 import com.alibaba.otter.canal.connector.core.spi.CanalMsgConsumer;
 import com.alibaba.otter.canal.connector.core.spi.ExtensionLoader;
+import com.alibaba.otter.canal.connector.core.spi.ProxyCanalMsgConsumer;
 
 /**
  * 适配处理器
@@ -87,6 +86,7 @@ public class AdapterProcessor {
     public void writeOut(final List<CommonMessage> commonMessages) {
         List<Future<Boolean>> futures = new ArrayList<>();
         // 组间适配器并行运行
+        // 当 canalOuterAdapters 初始化失败时，消息将会全部丢失
         canalOuterAdapters.forEach(outerAdapters -> {
             futures.add(groupInnerExecutorService.submit(() -> {
                 try {
