@@ -31,6 +31,7 @@
         <module>rdb</module>
         <module>es6x</module>
         <module>es7x</module>
+        <module>es8x</module>
         <module>escore</module>
         <module>kudu</module>
         <module>phoenix</module>
@@ -110,12 +111,12 @@
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-context</artifactId>
-                <version>2.0.0.RELEASE</version>
+                <version>3.0.6</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot</artifactId>
-                <version>2.0.1.RELEASE</version>
+                <version>2.5.4</version>
             </dependency>
             <dependency>
                 <groupId>com.h2database</groupId>
