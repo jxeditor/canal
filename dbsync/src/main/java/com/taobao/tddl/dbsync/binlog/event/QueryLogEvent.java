@@ -620,12 +620,30 @@ public class QueryLogEvent extends LogEvent {
     public static final int Q_DEFAULT_TABLE_ENCRYPTION        = 20;
 
     /**
-     * @since percona 8.0.31 Replicate ddl_skip_rewrite.
+     * Replicate PolarDB-X
+     * 
+     * @since PolarDB-X 8.0.32
+     */
+    public static final int Q_OPT_FLASHBACK_AREA              = 21;
+
+    /**
+     * Replicate PolarDB-X
+     * 
+     * @since PolarDB-X 8.0.32
+     */
+    public static final int Q_OPT_INDEX_FORMAT_GPP_ENABLED    = 22;
+
+    /**
+     * Replicate ddl_skip_rewrite.
+     *
+     * @since percona 8.0.31
      */
     public static final int Q_DDL_SKIP_REWRITE                = 21;
 
     /**
-     * @since percona 8.0.31 Replicate Q_WSREP_SKIP_READONLY_CHECKS.
+     * Replicate Q_WSREP_SKIP_READONLY_CHECKS.
+     *
+     * @since percona 8.0.31
      */
     public static final int Q_WSREP_SKIP_READONLY_CHECKS      = 128;
 
@@ -642,6 +660,15 @@ public class QueryLogEvent extends LogEvent {
     public static final int Q_GTID_FLAGS3                     = 130;
 
     public static final int Q_CHARACTER_SET_COLLATIONS        = 131;
+
+    /**
+     * support PolarDB-X used for storing snapshot tso or commit tso snapshot tso is
+     * stored in XA End Event with Query_log commit tso is stored in XA Commit Event
+     * with Query_log
+     */
+    public static final int Q_LIZARD_COMMIT_GCN               = 200;
+
+    public static final int Q_LIZARD_PREPARE_GCN              = 201;
 
     private final void unpackVariables(LogBuffer buffer, final int end) throws IOException {
         int code = -1;
@@ -741,8 +768,19 @@ public class QueryLogEvent extends LogEvent {
                         // *start++ = thd->variables.default_table_encryption;
                         buffer.forward(1);
                         break;
-                    case Q_DDL_SKIP_REWRITE:
-                        // *start++ = thd->variables.binlog_ddl_skip_rewrite;
+                    case Q_OPT_FLASHBACK_AREA:
+                        if (compatiablePercona) {
+                            // percona
+                            // *start++ = thd->variables.binlog_ddl_skip_rewrite;
+                            buffer.forward(1);
+                        }else {
+                            // PolarDB-X
+                            // *start++ = thd->variables.opt_flashback_area;
+                            buffer.forward(1);
+                        }
+                        break;
+                    case Q_OPT_INDEX_FORMAT_GPP_ENABLED :
+                        // *start++ = thd->variables.opt_index_format_gpp_enabled;
                         buffer.forward(1);
                         break;
                     case Q_HRNOW:
@@ -781,6 +819,14 @@ public class QueryLogEvent extends LogEvent {
                         int count = buffer.getUint8();
                         // character_set_collations= Lex_cstring((const char *) pos0 , (const char *) pos);
                         buffer.forward(count * 4);
+                        break;
+                    case Q_LIZARD_COMMIT_GCN:
+                        // commitGCN = buffer.getLong64();
+                        buffer.forward(8);
+                        break;
+                    case Q_LIZARD_PREPARE_GCN:
+                        // prepareGCN = buffer.getLong64();
+                        buffer.forward(8);
                         break;
                     default:
                         /*
@@ -837,9 +883,13 @@ public class QueryLogEvent extends LogEvent {
                 return "Q_SQL_REQUIRE_PRIMARY_KEY";
             case Q_DEFAULT_TABLE_ENCRYPTION:
                 return "Q_DEFAULT_TABLE_ENCRYPTION";
-            case Q_DDL_SKIP_REWRITE:
+            case Q_OPT_FLASHBACK_AREA:
+                // or Q_DDL_SKIP_REWRITE
+                return "Q_DDL_SKIP_REWRITE";
+            case Q_OPT_INDEX_FORMAT_GPP_ENABLED:
                 return "Q_DDL_SKIP_REWRITE";
             case Q_HRNOW:
+                // or Q_WSREP_SKIP_READONLY_CHECKS
                 return "Q_HRNOW";
             case Q_XID:
                 return "Q_XID";
