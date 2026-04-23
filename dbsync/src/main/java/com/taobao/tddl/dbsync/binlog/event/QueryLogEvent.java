@@ -301,6 +301,8 @@ public class QueryLogEvent extends LogEvent {
                                                          + 1 + 1 /* type, default_table_encryption */
                                                          + 1 + 1 /* opt_flashback_area */
                                                          + 1 + 1 /* type, opt_index_format_gpp_enabled */
+                                                         + 1 + 1 /* type, opt_index_format_hippo_enabled */
+                                                         + 1 + 1 /* type, opt_index_format_spc_enabled */
                                                          + 1 + 1 /* type, opt_index_format_panda_enabled */
                                                          + 1 + 1 + NAME_LEN /* type, length, recycle_bin_table_name */);
 
@@ -620,8 +622,33 @@ public class QueryLogEvent extends LogEvent {
     /**
      * Replicate recycle_bin_table_name.
      */
+    /**
+     * Replicate opt_index_format_spc_enabled.
+     *
+     * @since PolarDB-X
+     */
+    public static final int Q_OPT_INDEX_FORMAT_SPC_ENABLED    = 252;
+
+    /**
+     * Replicate opt_index_format_hippo_enabled.
+     *
+     * @since PolarDB-X
+     */
+    public static final int Q_OPT_INDEX_FORMAT_HIPPO_ENABLED  = 253;
+
+    /*
+      Replicate recycle_bin_table_name.
+
+      @since PolarDB-X
+    */
     public static final int Q_OPT_RECYCLE_BIN_TABLE_NAME      = 254;
 
+    /*
+      Replicate opt_index_format_panda_enabled.
+      Private codes are allocated from 255 downward (deployment order).
+
+      @since PolarDB-X
+    */
     public static final int Q_OPT_INDEX_FORMAT_PANDA_ENABLED  = 255;
 
     private static final String findCodeName(final int code) {
@@ -669,6 +696,10 @@ public class QueryLogEvent extends LogEvent {
                 return "Q_OPT_FLASHBACK_AREA";
             case Q_OPT_INDEX_FORMAT_GPP_ENABLED:
                 return "Q_OPT_INDEX_FORMAT_GPP_ENABLED";
+            case Q_OPT_INDEX_FORMAT_SPC_ENABLED:
+                return "Q_OPT_INDEX_FORMAT_SPC_ENABLED";
+            case Q_OPT_INDEX_FORMAT_HIPPO_ENABLED:
+                return "Q_OPT_INDEX_FORMAT_HIPPO_ENABLED";
             case Q_OPT_RECYCLE_BIN_TABLE_NAME:
                 return "Q_OPT_RECYCLE_BIN_TABLE_NAME";
             case Q_OPT_INDEX_FORMAT_PANDA_ENABLED:
@@ -843,6 +874,14 @@ public class QueryLogEvent extends LogEvent {
                     case Q_LIZARD_PREPARE_GCN:
                         // prepareGCN = buffer.getLong64();
                         buffer.forward(8);
+                        break;
+                    case Q_OPT_INDEX_FORMAT_SPC_ENABLED:
+                        // *start++ = thd->variables.opt_index_format_spc_enabled;
+                        buffer.forward(1);
+                        break;
+                    case Q_OPT_INDEX_FORMAT_HIPPO_ENABLED:
+                        // *start++ = thd->variables.opt_index_format_hippo_enabled;
+                        buffer.forward(1);
                         break;
                     case Q_OPT_RECYCLE_BIN_TABLE_NAME:
                         int recycle_bin_table_name_len = buffer.getUint8();
